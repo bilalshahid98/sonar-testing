@@ -1,0 +1,48 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Node.js and NPM
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install dependencies and build
+        run: |
+          npm install 
+          
+
+  katalon:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Download and install Katalon Studio
+        run: |
+          wget -O katalon.tar.gz https://download.katalon.com/7.9.0/Katalon_Studio_Linux_64-7.9.0.tar.gz
+          tar -xzf katalon.tar.gz
+          chmod +x Katalon_Studio_Linux_64-7.9.0/katalon
+
+      - name: Run Katalon Tests
+        run: |
+          ./Katalon_Studio_Linux_64-7.9.0/katalon \
+          -noSplash \
+          -runMode=console \
+          -projectPath="/var/lib/jenkins/workspace/katalon/katalon-lms-test-cases" \
+          -retry=0 \
+          -testSuitePath="/var/lib/jenkins/workspace/katalon/katalon-lms-test-cases" \
+          -browserType="Chrome"
